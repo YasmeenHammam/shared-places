@@ -1,10 +1,10 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
-const placesRoutes = require('./routes/places-route');
-const usersRoutes = require('./routes/users-route');
+const placesRoutes = require("./routes/places-route");
+const usersRoutes = require("./routes/users-route");
 const HttpError = require("./models/http-erros");
-
 
 const app = express();
 
@@ -14,20 +14,26 @@ app.use("/api/places", placesRoutes);
 app.use("/api/users", usersRoutes);
 
 app.use((req, res, next) => {
-    const error = new HttpError('Could not find this route.', 404);
-    throw error;
-}
-);
+  const error = new HttpError("Could not find this route.", 404);
+  throw error;
+});
 
 app.use((error, req, res, next) => {
-    if (res.headerSent) { 
-        return next(error);
-    }   
-    res.status(error.code || 500);
-    res.json({ message: error.message || 'An unknown error occurred!' });
-}
-);
+  if (res.headerSent) {
+    return next(error);
+  }
+  res.status(error.code || 500);
+  res.json({ message: error.message || "An unknown error occurred!" });
+});
 
-
-
-app.listen(5000);
+mongoose
+  .connect(
+    "mongodb+srv://Yasmeen:MyStrongPassword123@cluster0.jtlmh2b.mongodb.net/places?retryWrites=true&w=majority&appName=Cluster0"
+)
+  .then(() => {
+    console.log("Connected to database!");
+    app.listen(5000);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
