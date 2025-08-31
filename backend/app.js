@@ -27,9 +27,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(
-    "mongodb+srv://Yasmeen:MyStrongPassword123@cluster0.jtlmh2b.mongodb.net/places?retryWrites=true&w=majority&appName=Cluster0"
-)
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("Connected to database!");
     app.listen(5000);
