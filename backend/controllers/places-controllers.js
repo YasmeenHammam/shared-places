@@ -1,4 +1,5 @@
 const uuid = require("uuid").v4;
+const fs = require("fs");
 const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-erros");
@@ -32,10 +33,10 @@ const getPlaceById = async (req, res, next) => {
 
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
-    //   let places;
-    let userWithPlaces;
+  //   let places;
+  let userWithPlaces;
   try {
-      userWithPlaces = await User.findById(userId).populate("places");
+    userWithPlaces = await User.findById(userId).populate("places");
     // places = await Place.find({ creator: userId });
   } catch (err) {
     const error = new HttpError(
@@ -52,7 +53,9 @@ const getPlacesByUserId = async (req, res, next) => {
     return next(error); // to stop execution here
   }
   res.json({
-    places: userWithPlaces.places.map((place) => place.toObject({ getters: true })),
+    places: userWithPlaces.places.map((place) =>
+      place.toObject({ getters: true })
+    ),
   });
 };
 
@@ -70,7 +73,7 @@ const createPlace = async (req, res, next) => {
     description,
     address,
     location: coordinates,
-    image: "https://picsum.photos/200",
+    image: req.file.path,
     creator,
   });
 
@@ -156,10 +159,13 @@ const deletePlace = async (req, res, next) => {
     );
     return next(error); // to stop execution here
   }
+
   if (!place) {
     const error = new HttpError("Could not find place for this id.", 404);
     return next(error); // to stop execution here
   }
+
+  const imagePath = place.image;
 
   try {
     const sess = await mongoose.startSession();
@@ -175,6 +181,10 @@ const deletePlace = async (req, res, next) => {
     );
     return next(error); // to stop execution here
   }
+
+  fs.unlink(imagePath, (err) => {
+    console.log(err);
+  });
 
   res.status(200).json({ message: "Deleted place." });
 };
